@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@@DISPLAY_TITLE@@</title>
+    <base href="/" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Hidden Blazor bridge component (provides JSInterop only) -->
+    <div id="blazor-bridge" class="hidden"></div>
+    
+    <!-- Pure JavaScript Frontend UI (dynamically rendered) -->
+    <div id="app">
+        <div class="loading-message">
+            <h2>Loading Frontend...</h2>
+            <p>Initializing pure JavaScript UI...</p>
+        </div>
+    </div>
+
+    <!-- Blazor framework script (minimal, just for bridge) -->
+    <script src="_framework/blazor.webview.js"></script>
+    
+    <!-- Pure JavaScript frontend application -->
+    <script src="app.js"></script>
+</body>
+</html>
