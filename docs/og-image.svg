@@ -24,5 +24,5 @@
 <text x="115" y="340" class="mono">Frontend (wwwroot)  ⇄  JSInterop  ⇄  C# Services</text>
 <text x="115" y="385" class="mono">Swap React / Vue / Svelte without backend changes</text>
 <text x="115" y="430" class="mono">Publish Windows installer out of the box</text>
-<text x="115" y="475" class="mono">Evolves via feedback • MIT Licensed</text>
+<text x="115" y="475" class="mono">Evolves via feedback • Apache-2.0 Licensed</text>
 </svg>
