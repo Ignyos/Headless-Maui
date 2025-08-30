@@ -1,4 +1,4 @@
-# MAUI Template Setup Script
+# Headless MAUI Template Setup Script
 # One-time customization script to replace template tokens with project-specific values
 
 param(
@@ -8,7 +8,7 @@ param(
 
 function Show-Help {
     Write-Host @"
-MAUI Template Setup Script
+Headless MAUI Template Setup Script
 
 USAGE:
     .\setup.ps1 [OPTIONS]
@@ -332,6 +332,17 @@ try {
         Write-Host "Run '.\setup.ps1' to apply changes." -ForegroundColor Yellow
     } else {
         Write-Host "`n✅ Updated $updatedCount files successfully!" -ForegroundColor Green
+        # Remove template marketing docs directory if present (one-time; not needed in user projects)
+        if (Test-Path 'docs') {
+            Write-Host "Removing template docs/ directory..." -ForegroundColor Yellow
+            try {
+                Remove-Item 'docs' -Recurse -Force -ErrorAction Stop
+                Write-Host "docs/ directory removed." -ForegroundColor Green
+            }
+            catch {
+                Write-Host "⚠️  Failed to remove docs/: $($_.Exception.Message)" -ForegroundColor Yellow
+            }
+        }
         
         # Test build
         if (Test-ProjectBuild) {
