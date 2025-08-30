@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+  <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+    <stop stop-color="#10141b"/>
+    <stop offset="1" stop-color="#1a2230"/>
+  </linearGradient>
+  <linearGradient id="grad" x1="0" x2="1" y1="0" y2="1">
+    <stop stop-color="#6366f1"/>
+    <stop offset="0.5" stop-color="#8b5cf6"/>
+    <stop offset="1" stop-color="#d946ef"/>
+  </linearGradient>
+  <style>
+    .title{font:700 86px system-ui,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;fill:#fff;letter-spacing:1px}
+    .accent{fill:url(#grad)}
+    .tag{font:500 36px system-ui,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;fill:#c8d1dc}
+    .mono{font:400 30px 'JetBrains Mono',Consolas,monaco,monospace;fill:#9aa6b4}
+    .box{fill:#161d27;stroke:#273240;stroke-width:2;rx:14}
+  </style>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<text x="90" y="170" class="title">Headless <tspan class="accent">Maui</tspan> Frontend</text>
+<text x="92" y="235" class="tag">Decoupled JavaScript UI Template for .NET MAUI</text>
+<rect x="90" y="280" width="1020" height="240" class="box"/>
+<text x="115" y="340" class="mono">Frontend (wwwroot)  ⇄  JSInterop  ⇄  C# Services</text>
+<text x="115" y="385" class="mono">Swap React / Vue / Svelte without backend changes</text>
+<text x="115" y="430" class="mono">Publish Windows installer out of the box</text>
+<text x="115" y="475" class="mono">Evolves via feedback • MIT Licensed</text>
+</svg>
