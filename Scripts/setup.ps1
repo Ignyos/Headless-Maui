@@ -332,15 +332,38 @@ try {
         Write-Host "Run '.\setup.ps1' to apply changes." -ForegroundColor Yellow
     } else {
         Write-Host "`n✅ Updated $updatedCount files successfully!" -ForegroundColor Green
-        # Remove template marketing docs directory if present (one-time; not needed in user projects)
+        # Handle template marketing docs directory
         if (Test-Path 'docs') {
-            Write-Host "Removing template docs/ directory..." -ForegroundColor Yellow
-            try {
-                Remove-Item 'docs' -Recurse -Force -ErrorAction Stop
-                Write-Host "docs/ directory removed." -ForegroundColor Green
+            Write-Host "`nThe template includes a marketing 'docs/' folder (GitHub Pages splash)." -ForegroundColor Cyan
+            Write-Host "It is usually NOT needed for actual application projects." -ForegroundColor Gray
+            Write-Host "If you have already customized it, choose to keep it; otherwise it will be deleted." -ForegroundColor Gray
+            $keepDocs = Read-Host "Keep docs/ folder? (y/N)"
+            if ($keepDocs -match '^[Yy]') {
+                # Remove default CNAME if still pointing to template domain
+                $cnamePath = Join-Path 'docs' 'CNAME'
+                if (Test-Path $cnamePath) {
+                    $cnameValue = (Get-Content $cnamePath -Raw).Trim()
+                    if ($cnameValue -eq 'headless-maui-template.ignyos.com') {
+                        try {
+                            Remove-Item $cnamePath -Force -ErrorAction Stop
+                            Write-Host "Removed template CNAME file to avoid domain conflicts." -ForegroundColor Yellow
+                        }
+                        catch {
+                            Write-Host "⚠️  Could not remove CNAME: $($_.Exception.Message)" -ForegroundColor Yellow
+                        }
+                    }
+                }
+                Write-Host "Keeping docs/ as requested." -ForegroundColor Green
             }
-            catch {
-                Write-Host "⚠️  Failed to remove docs/: $($_.Exception.Message)" -ForegroundColor Yellow
+            else {
+                Write-Host "Removing docs/ directory..." -ForegroundColor Yellow
+                try {
+                    Remove-Item 'docs' -Recurse -Force -ErrorAction Stop
+                    Write-Host "docs/ directory removed." -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "⚠️  Failed to remove docs/: $($_.Exception.Message)" -ForegroundColor Yellow
+                }
             }
         }
         
