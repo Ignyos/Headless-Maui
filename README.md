@@ -63,6 +63,42 @@ This template combines the best of both worlds:
    .\setup.ps1
    ```
 
+### One-Time Setup Script (setup.ps1)
+The `setup.ps1` script MUST be executed **from the repository root** (same folder that contains `AppShell/` and this `README.md`).
+
+It will:
+- Prompt you for: Display Name, Application Identifier, Company Name, Package ID, Description
+- Replace all `@@TOKEN@@` placeholders across the project
+- Optionally remove the template marketing `docs/` folder (you decide during the run)
+- Test a build
+- Self-delete to prevent accidental re-use
+
+Optional arguments:
+```powershell
+# Show help / usage
+.\setup.ps1 -Help
+
+# Preview changes (no file writes, no deletion, no build)
+.\setup.ps1 -DryRun
+
+# Combine (help text first, then exit)
+.\setup.ps1 -Help -DryRun
+```
+
+Cross‑platform (PowerShell Core):
+```bash
+pwsh ./setup.ps1 -DryRun
+```
+
+Safety / notes:
+- The script only runs correctly from the root because it uses relative paths like `AppShell\AppShell.csproj`.
+- If you see "Project file not found" you are not in the root directory.
+- After a successful non-dry run, `setup.ps1` deletes itself. Commit changes first if you want a history diff.
+- To re-run after deletion, restore it from git history (`git checkout HEAD~1 -- setup.ps1`) or your fork (not usually needed).
+- Use `-DryRun` in CI or to verify what will change before committing.
+
+After running the setup (non-dry), continue with the build/run steps below.
+
 ## 📦 Releases
 
 Full release history and detailed notes: https://github.com/Ignyos/Headless-Maui-Frontend/releases
