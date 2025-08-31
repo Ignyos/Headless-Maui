@@ -10,6 +10,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Capture the absolute path of this script early for later self-deletion.
+# $PSCommandPath works in Windows PowerShell 3.0+ and PowerShell Core; fallback to $MyInvocation.ScriptName.
+$ScriptFilePath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.ScriptName }
+$ScriptDisplayName = Split-Path -Leaf $ScriptFilePath
+
 function Show-Help {
     Write-Host @"
 Headless MAUI Template Setup Script
@@ -244,8 +249,21 @@ function Remove-SetupScript {
     Write-Host "`nCleaning up..." -ForegroundColor Cyan
     try {
         Write-Host 'Removing setup script (one-time use only)...' -ForegroundColor Gray
-        Remove-Item $MyInvocation.MyCommand.Path -Force
-        Write-Host '[OK] Setup script removed.' -ForegroundColor Green
+
+        if (-not (Test-Path -LiteralPath $ScriptFilePath)) {
+            Write-Host "[WARN] Could not locate script file at: $ScriptFilePath" -ForegroundColor Yellow
+            Write-Host '   Skipping self-removal. Delete manually if desired.' -ForegroundColor Yellow
+            return
+        }
+
+        # Detect dot-sourced usage; skip deletion to avoid removing in-session definitions.
+        if ($MyInvocation.Line -match '^\.\s') {
+            Write-Host '[WARN] Script was dot-sourced; skipping self-deletion.' -ForegroundColor Yellow
+            return
+        }
+
+        Remove-Item -LiteralPath $ScriptFilePath -Force
+        Write-Host "[OK] Removed $ScriptDisplayName" -ForegroundColor Green
     } catch {
         Write-Host "[WARN] Could not remove setup script: $($_.Exception.Message)" -ForegroundColor Yellow
         Write-Host '   Please delete setup.ps1 manually to prevent accidental re-runs.' -ForegroundColor Yellow
