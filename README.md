@@ -1,5 +1,9 @@
 # Pure JavaScript Frontend - MAUI Template
 
+![Latest Release](https://img.shields.io/github/v/release/Ignyos/Headless-Maui-Frontend?label=latest)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![Stars](https://img.shields.io/github/stars/Ignyos/Headless-Maui-Frontend?style=social)
+
 A clean, professional .NET MAUI template with **pure JavaScript frontend** and C# backend services, connected via a minimal JSInterop bridge.
 
 ## 🤔 Why This Template?
@@ -58,6 +62,17 @@ This template combines the best of both worlds:
    ```powershell
    .\setup.ps1
    ```
+
+## 📦 Releases
+
+Full release history and detailed notes: https://github.com/Ignyos/Headless-Maui-Frontend/releases
+
+Current latest version badge (above) updates automatically when a new GitHub Release is published. Each release includes:
+- Summary of major changes
+- Installation / publish notes if relevant
+- Any migration tips (when necessary)
+
+For versioning we follow simple semantic versioning (MAJOR.MINOR.PATCH) informed by real-world feedback rather than a rigid roadmap.
 4. **Build and run** the application:
    ```powershell
    cd AppShell
