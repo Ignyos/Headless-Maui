@@ -58,9 +58,9 @@ This template combines the best of both worlds:
 ### Quick Start
 1. **Fork this repository** to your GitHub account
 2. **Clone your fork** locally
-3. **Customize the template** for your project:
+3. **Customize the template** for your project (run from the repository root):
    ```powershell
-   .\setup.ps1
+   .\Scripts\setup.ps1
    ```
 
 ### One-Time Setup Script (setup.ps1)
@@ -73,21 +73,21 @@ It will:
 - Test a build
 - Self-delete to prevent accidental re-use
 
-Optional arguments:
+Optional arguments (always run from the repository root, do NOT cd into Scripts/):
 ```powershell
 # Show help / usage
-.\setup.ps1 -Help
+./Scripts/setup.ps1 -Help
 
 # Preview changes (no file writes, no deletion, no build)
-.\setup.ps1 -DryRun
+./Scripts/setup.ps1 -DryRun
 
 # Combine (help text first, then exit)
-.\setup.ps1 -Help -DryRun
+./Scripts/setup.ps1 -Help -DryRun
 ```
 
 Cross‑platform (PowerShell Core):
 ```bash
-pwsh ./setup.ps1 -DryRun
+pwsh ./Scripts/setup.ps1 -DryRun
 ```
 
 Safety / notes:
