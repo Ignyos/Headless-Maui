@@ -224,7 +224,7 @@ function Update-FileTokens {
     }
 }
 
-function Sanitize-SvgFiles {
+function Invoke-SvgSanitization {
     param(
         [string]$Root = 'AppShell\\Resources',
         [bool]$DryRun = $false
@@ -347,11 +347,21 @@ try {
             }
         }
         # Sanitize SVG assets (remove any lingering XML declarations / DOCTYPE lines that can break Resizetizer)
-        Sanitize-SvgFiles -DryRun:$DryRun
+    Invoke-SvgSanitization -DryRun:$DryRun
         # Purge obj/bin to ensure no cached transformed SVGs
         if (-not $DryRun) {
             Write-Host "`nCleaning build artifacts (bin/ & obj/) to clear cached assets..." -ForegroundColor Cyan
-            foreach ($dir in @('AppShell/bin','AppShell/obj')) { if (Test-Path $dir) { try { Remove-Item $dir -Recurse -Force -ErrorAction Stop; Write-Host "   Removed $dir" -ForegroundColor Gray } catch { Write-Host "   [WARN] Could not remove $dir: $($_.Exception.Message)" -ForegroundColor Yellow } } }
+            foreach ($dir in @('AppShell/bin','AppShell/obj')) {
+                if (Test-Path $dir) {
+                    try {
+                        Remove-Item $dir -Recurse -Force -ErrorAction Stop
+                        Write-Host "   Removed $dir" -ForegroundColor Gray
+                    } catch {
+                        # Use ${dir} before colon to avoid parser interpreting $dir: as a drive spec
+                        Write-Host "   [WARN] Could not remove ${dir}: $($_.Exception.Message)" -ForegroundColor Yellow
+                    }
+                }
+            }
         }
         if (Test-ProjectBuild) {
             Write-Host "`n[SUCCESS] Setup completed successfully!" -ForegroundColor Green
