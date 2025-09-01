@@ -50,7 +50,9 @@ function Test-SetupAlreadyRun {
         exit 1
     }
     $content = Get-Content $projectFile -Raw -Encoding UTF8
-    if ($content -notlike '*@@*@@*') {
+    # Detect if ANY placeholder tokens remain. Tokens follow pattern @@UPPERCASE_WORD@@
+    $tokenMatches = [regex]::Matches($content, '@@[A-Z_]+@@')
+    if ($tokenMatches.Count -eq 0) {
         Write-Host '[WARN] This template appears to already be customized.' -ForegroundColor Yellow
         Write-Host '   No @@TOKEN@@ placeholders found in project file.' -ForegroundColor Yellow
         $confirm = Read-Host 'Do you want to continue anyway? (y/N)'
