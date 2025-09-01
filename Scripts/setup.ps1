@@ -224,6 +224,36 @@ function Update-FileTokens {
     }
 }
 
+function Sanitize-SvgFiles {
+    param(
+        [string]$Root = 'AppShell\\Resources',
+        [bool]$DryRun = $false
+    )
+    if (-not (Test-Path $Root)) { return }
+    Write-Host "`nScanning SVG assets for XML prologs/DOCTYPE..." -ForegroundColor Cyan
+    $svgFiles = Get-ChildItem $Root -Recurse -Filter *.svg -File -ErrorAction SilentlyContinue
+    foreach ($file in $svgFiles) {
+        try {
+            $raw = Get-Content $file.FullName -Raw -Encoding UTF8
+            $lines = $raw -split "`r?`n"
+            $originalCount = $lines.Count
+            $filtered = $lines | Where-Object { $_ -notmatch '^<\?xml' -and $_ -notmatch '^<!DOCTYPE' }
+            # Trim leading blank lines
+            while ($filtered.Count -gt 0 -and [string]::IsNullOrWhiteSpace($filtered[0])) { $filtered = $filtered[1..($filtered.Count-1)] }
+            if ($filtered.Count -lt $originalCount) {
+                if ($DryRun) {
+                    Write-Host "   Would sanitize SVG: $($file.FullName)" -ForegroundColor Yellow
+                } else {
+                    Set-Content $file.FullName ($filtered -join [Environment]::NewLine) -Encoding UTF8 -NoNewline
+                    Write-Host "   [OK] Sanitized SVG: $($file.FullName)" -ForegroundColor Green
+                }
+            }
+        } catch {
+            Write-Host "   [WARN] Could not process SVG $($file.FullName): $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    }
+}
+
 function Test-ProjectBuild {
     Write-Host "`nTesting project build..." -ForegroundColor Cyan
     try {
@@ -315,6 +345,13 @@ try {
                     Write-Host 'docs/ directory removed.' -ForegroundColor Green
                 } catch { Write-Host "[WARN] Failed to remove docs/: $($_.Exception.Message)" -ForegroundColor Yellow }
             }
+        }
+        # Sanitize SVG assets (remove any lingering XML declarations / DOCTYPE lines that can break Resizetizer)
+        Sanitize-SvgFiles -DryRun:$DryRun
+        # Purge obj/bin to ensure no cached transformed SVGs
+        if (-not $DryRun) {
+            Write-Host "`nCleaning build artifacts (bin/ & obj/) to clear cached assets..." -ForegroundColor Cyan
+            foreach ($dir in @('AppShell/bin','AppShell/obj')) { if (Test-Path $dir) { try { Remove-Item $dir -Recurse -Force -ErrorAction Stop; Write-Host "   Removed $dir" -ForegroundColor Gray } catch { Write-Host "   [WARN] Could not remove $dir: $($_.Exception.Message)" -ForegroundColor Yellow } } }
         }
         if (Test-ProjectBuild) {
             Write-Host "`n[SUCCESS] Setup completed successfully!" -ForegroundColor Green
