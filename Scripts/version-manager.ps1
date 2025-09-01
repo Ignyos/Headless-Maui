@@ -89,7 +89,8 @@ function Update-ProjectVersion {
     
     # Validate version format
     try {
-        [System.Version]$versionObj = $NewVersion
+        # Validate format (cast only)
+        [void][System.Version]$NewVersion
     }
     catch {
         throw "Invalid version format: $NewVersion. Use format: Major.Minor.Build (e.g., 1.0.0)"
@@ -103,7 +104,8 @@ function Update-ProjectVersion {
     # Update platform-specific manifests
     Update-PlatformManifests -Version $NewVersion
     
-    Write-Host "✅ Project version updated to $NewVersion" -ForegroundColor Green
+    # Using ASCII-only status tag for compatibility across shells
+    Write-Host "[OK] Project version updated to $NewVersion" -ForegroundColor Green
 }
 
 function Update-PlatformManifests {
@@ -116,24 +118,24 @@ function Update-PlatformManifests {
         $content = Get-Content $windowsManifest -Raw
         $content = $content -replace 'Version="[\d\.]+"', "Version=`"$fourPartVersion`""
         Set-Content $windowsManifest $content -NoNewline
-        Write-Host "  ✅ Updated Windows manifest" -ForegroundColor Green
+    Write-Host "  [OK] Updated Windows manifest" -ForegroundColor Green
     }
     
     # iOS Info.plist
     $iosManifest = "AppShell\Platforms\iOS\Info.plist"
     if (Test-Path $iosManifest) {
-        [xml]$plistXml = Get-Content $iosManifest
-        # Add version to iOS plist if needed
-        Write-Host "  ✅ iOS manifest ready" -ForegroundColor Green
+        # Placeholder: parse/update Info.plist if needed in future
+        $null = Get-Content $iosManifest -ErrorAction SilentlyContinue
+    Write-Host "  [OK] iOS manifest ready" -ForegroundColor Green
     }
     
     # Android (version is handled by MAUI project properties)
-    Write-Host "  ✅ Android manifest ready" -ForegroundColor Green
+    Write-Host "  [OK] Android manifest ready" -ForegroundColor Green
     
     # macOS Info.plist
     $macManifest = "AppShell\Platforms\MacCatalyst\Info.plist"
     if (Test-Path $macManifest) {
-        Write-Host "  ✅ macOS manifest ready" -ForegroundColor Green
+    Write-Host "  [OK] macOS manifest ready" -ForegroundColor Green
     }
 }
 
@@ -177,14 +179,16 @@ function Show-VersionSummary {
     
     # Show versions by platform
     if (Test-Path $PublishDir) {
-        $platforms = Get-ChildItem $PublishDir -Directory -ErrorAction SilentlyContinue
+        $platforms = @(Get-ChildItem $PublishDir -Directory -ErrorAction SilentlyContinue)
         foreach ($platform in $platforms) {
-            $files = Get-ChildItem $platform.FullName -File -ErrorAction SilentlyContinue
-            if ($files.Count -gt 0) {
+            $files = @(Get-ChildItem $platform.FullName -File -ErrorAction SilentlyContinue)
+            if ($files -and $files.Count -gt 0) {
                 $platformVersions = @()
                 foreach ($file in $files) {
                     if ($file.Name -match '_(\d+\.\d+\.\d+)_') {
-                        $platformVersions += [System.Version]$matches[1]
+                        try {
+                            $platformVersions += [System.Version]$matches[1]
+                        } catch { }
                     }
                 }
                 if ($platformVersions.Count -gt 0) {

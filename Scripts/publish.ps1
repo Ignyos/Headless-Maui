@@ -8,9 +8,17 @@ param(
     [switch]$Help
 )
 
-# Import version management utilities
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# Import version management utilities (publish.ps1 lives in root Scripts/)
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-. "$scriptDir\Scripts\version-manager.ps1"
+$versionManager = Join-Path $scriptDir 'version-manager.ps1'
+if (-not (Test-Path -LiteralPath $versionManager)) {
+    Write-Host "[ERROR] version-manager.ps1 not found at $versionManager" -ForegroundColor Red
+    exit 1
+}
+. $versionManager
 
 function Show-Help {
     Write-Host @"
@@ -137,8 +145,8 @@ function Select-Version {
     }
     
     # Check for existing installers
-    $existingInstallers = Get-ExistingInstallers $suggestedVersion $TargetPlatform
-    if ($existingInstallers.Count -gt 0) {
+    $existingInstallers = @(Get-ExistingInstallers $suggestedVersion $TargetPlatform)
+    if ($existingInstallers -and $existingInstallers.Count -gt 0) {
         Write-Host "Warning: Version $suggestedVersion already exists for ${TargetPlatform}:" -ForegroundColor Yellow
         foreach ($installer in $existingInstallers) {
             Write-Host "    $($installer.Name)" -ForegroundColor Yellow
@@ -156,10 +164,11 @@ function Select-Version {
     
     # Validate version format
     try {
-        [System.Version]$versionTest = $chosenVersion
+        # Cast to System.Version to validate format; result not stored
+        [void][System.Version]$chosenVersion
     }
     catch {
-        Write-Host "❌ Invalid version format: $chosenVersion" -ForegroundColor Red
+    Write-Host "[ERROR] Invalid version format: $chosenVersion" -ForegroundColor Red
         Write-Host "   Use format: Major.Minor.Build (e.g., 1.0.0)" -ForegroundColor Red
         exit 1
     }
@@ -176,7 +185,7 @@ function Invoke-PlatformPublisher {
     $platformScript = "AppShell\Platforms\$Platform\Scripts\publish.ps1"
     
     if (-not (Test-Path $platformScript)) {
-        Write-Host "❌ Platform script not found: $platformScript" -ForegroundColor Red
+        Write-Host "[ERROR] Platform script not found: $platformScript" -ForegroundColor Red
         exit 1
     }
     
@@ -189,7 +198,7 @@ function Invoke-PlatformPublisher {
     & $platformScript -Version $Version
     
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "`n✅ Successfully published $Platform installer version $Version" -ForegroundColor Green
+        Write-Host "`n[OK] Successfully published $Platform installer version $Version" -ForegroundColor Green
         
         # Show what was created
         $publishDir = "AppShell\Publish\$Platform"
@@ -201,11 +210,11 @@ function Invoke-PlatformPublisher {
         if ($createdFiles.Count -gt 0) {
             Write-Host "Created installers:" -ForegroundColor Green
             foreach ($file in $createdFiles) {
-                Write-Host "  📦 $($file.FullName)" -ForegroundColor Green
+                Write-Host "  - $($file.FullName)" -ForegroundColor Green
             }
         }
     } else {
-        Write-Host "`n❌ Failed to publish $Platform installer" -ForegroundColor Red
+        Write-Host "`n[ERROR] Failed to publish $Platform installer" -ForegroundColor Red
         exit 1
     }
 }
@@ -224,10 +233,26 @@ try {
     
     # Ensure we're in the right directory
     if (-not (Test-Path "AppShell\AppShell.csproj")) {
-        Write-Host "❌ Please run this script from the root of the MAUI template project." -ForegroundColor Red
+        Write-Host "[ERROR] Please run this script from the root of the MAUI template project." -ForegroundColor Red
         exit 1
     }
     
+    # Token validation (ensure setup ran)
+    $projectFile = 'AppShell\AppShell.csproj'
+    $projContent = Get-Content -LiteralPath $projectFile -Raw
+    $tokens = @('@@DISPLAY_TITLE@@','@@PACKAGE_ID@@','@@APP_DESCRIPTION@@','@@COMPANY_NAME@@')
+    $remaining = @()
+    foreach ($t in $tokens) { if ($projContent -like "*${t}*") { $remaining += $t } }
+    if ($remaining.Count -gt 0) {
+        Write-Host "[ERROR] Template tokens still present: $($remaining -join ', ')" -ForegroundColor Red
+        Write-Host "        Run the setup script first:" -ForegroundColor Yellow
+        Write-Host "          .\\Scripts\\setup.ps1" -ForegroundColor Yellow
+        Write-Host "        Optional Parameters:" -ForegroundColor Yellow
+        Write-Host "          -Help" -ForegroundColor Yellow
+        Write-Host "          -DryRun" -ForegroundColor Yellow
+        exit 1
+    }
+
     # Show current version summary
     Show-VersionSummary
     
@@ -251,6 +276,7 @@ try {
     Invoke-PlatformPublisher $Platform $Version
     
 } catch {
-    Write-Host "❌ An error occurred: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[ERROR] An error occurred: $($_.Exception.Message)" -ForegroundColor Red
+    if ($_.InvocationInfo.PositionMessage) { Write-Host $_.InvocationInfo.PositionMessage -ForegroundColor DarkGray }
     exit 1
 }

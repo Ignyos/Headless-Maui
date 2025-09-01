@@ -9,6 +9,9 @@ param(
     [switch]$Help
 )
 
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
 function Show-Help {
     Write-Host @"
 Windows Publisher for MAUI Template
@@ -42,10 +45,10 @@ function Test-Prerequisites {
     # Check .NET SDK
     try {
         $dotnetVersion = & dotnet --version 2>$null
-        Write-Host "✅ .NET SDK: $dotnetVersion" -ForegroundColor Green
+    Write-Host "[OK] .NET SDK: $dotnetVersion" -ForegroundColor Green
     }
     catch {
-        Write-Host "❌ .NET SDK not found. Please install .NET 9.0 SDK or later." -ForegroundColor Red
+    Write-Host "[ERROR] .NET SDK not found. Please install .NET 9.0 SDK or later." -ForegroundColor Red
         return $false
     }
     
@@ -66,10 +69,10 @@ function Test-Prerequisites {
     }
     
     if ($innoSetupPath) {
-        Write-Host "✅ InnoSetup found: $innoSetupPath" -ForegroundColor Green
+    Write-Host "[OK] InnoSetup found: $innoSetupPath" -ForegroundColor Green
         return $innoSetupPath
     } else {
-        Write-Host "❌ InnoSetup not found. Please install InnoSetup 6.0 from: https://jrsoftware.org/isinfo.php" -ForegroundColor Red
+    Write-Host "[ERROR] InnoSetup not found. Please install InnoSetup 6.0 from: https://jrsoftware.org/isinfo.php" -ForegroundColor Red
         return $false
     }
 }
@@ -84,9 +87,10 @@ function Build-MauiApp {
     Write-Host "Configuration: $Configuration" -ForegroundColor Gray
     Write-Host "Version: $Version" -ForegroundColor Gray
     
-    $projectPath = "..\..\AppShell.csproj"
+    # Project file is three levels up from this script (Platforms/Windows/Scripts)
+    $projectPath = "..\..\..\AppShell.csproj"
     $targetFramework = "net9.0-windows10.0.19041.0"
-    $outputPath = "bin\$Configuration\$targetFramework\win10-x64"
+    # Output path referenced implicitly via publish step; explicit variable removed to satisfy analyzer
     
     # Clean previous build
     Write-Host "Cleaning previous build..." -ForegroundColor Gray
@@ -97,7 +101,7 @@ function Build-MauiApp {
     $buildResult = & dotnet build $projectPath -c $Configuration -f $targetFramework --verbosity minimal
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Build failed!" -ForegroundColor Red
+    Write-Host "[ERROR] Build failed" -ForegroundColor Red
         Write-Host $buildResult -ForegroundColor Red
         return $false
     }
@@ -107,7 +111,7 @@ function Build-MauiApp {
     $publishResult = & dotnet publish $projectPath -c $Configuration -f $targetFramework -r win10-x64 --self-contained true -p:PublishSingleFile=false --verbosity minimal
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Publish failed!" -ForegroundColor Red
+    Write-Host "[ERROR] Publish failed" -ForegroundColor Red
         Write-Host $publishResult -ForegroundColor Red
         return $false
     }
@@ -115,18 +119,18 @@ function Build-MauiApp {
     $publishPath = Join-Path (Split-Path $projectPath -Parent) "bin\$Configuration\$targetFramework\win10-x64\publish"
     
     if (-not (Test-Path $publishPath)) {
-        Write-Host "❌ Published files not found at: $publishPath" -ForegroundColor Red
+    Write-Host "[ERROR] Published files not found at: $publishPath" -ForegroundColor Red
         return $false
     }
     
-    Write-Host "✅ Build completed successfully" -ForegroundColor Green
+    Write-Host "[OK] Build completed successfully" -ForegroundColor Green
     Write-Host "Published to: $publishPath" -ForegroundColor Gray
     
     return $publishPath
 }
 
 function Get-ProjectMetadata {
-    $projectPath = "..\..\AppShell.csproj"
+    $projectPath = "..\..\..\AppShell.csproj"
     [xml]$projectXml = Get-Content $projectPath
     
     return @{
@@ -138,7 +142,7 @@ function Get-ProjectMetadata {
     }
 }
 
-function Create-InnoSetupScript {
+function New-InnoSetupScript {
     param(
         [string]$Version,
         [string]$PublishPath,
@@ -174,9 +178,9 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir=..\..\..\..\Publish\Windows
+OutputDir=..\..\..\Publish\Windows
 OutputBaseFilename=${setupFileName}
-SetupIconFile=..\..\Resources\AppIcon\appicon.ico
+SetupIconFile=..\..\..\Resources\AppIcon\appicon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -209,7 +213,7 @@ Type: filesandordirs; Name: "{app}"
     $scriptPath = "AppInstaller.iss"
     Set-Content $scriptPath $innoScript -Encoding UTF8
     
-    Write-Host "✅ InnoSetup script created: $scriptPath" -ForegroundColor Green
+    Write-Host "[OK] InnoSetup script created: $scriptPath" -ForegroundColor Green
     return $scriptPath
 }
 
@@ -222,7 +226,7 @@ function Build-Installer {
     Write-Host "`nBuilding Windows installer..." -ForegroundColor Cyan
     
     # Ensure output directory exists
-    $outputDir = "..\..\..\..\Publish\Windows"
+    $outputDir = "..\..\..\Publish\Windows"
     if (-not (Test-Path $outputDir)) {
         New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     }
@@ -232,16 +236,16 @@ function Build-Installer {
     $result = & $InnoSetupPath $ScriptPath
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ InnoSetup compilation failed!" -ForegroundColor Red
+    Write-Host "[ERROR] InnoSetup compilation failed" -ForegroundColor Red
         Write-Host $result -ForegroundColor Red
         return $false
     }
     
-    Write-Host "✅ Installer created successfully" -ForegroundColor Green
+    Write-Host "[OK] Installer created successfully" -ForegroundColor Green
     return $true
 }
 
-function Cleanup-TempFiles {
+function Remove-TempFiles {
     Write-Host "Cleaning up temporary files..." -ForegroundColor Gray
     
     $tempFiles = @("AppInstaller.iss")
@@ -286,34 +290,34 @@ try {
             exit 1
         }
     } else {
-        $publishPath = "..\..\bin\$Configuration\net9.0-windows10.0.19041.0\win10-x64\publish"
+    $publishPath = "..\..\..\bin\$Configuration\net9.0-windows10.0.19041.0\win10-x64\publish"
         if (-not (Test-Path $publishPath)) {
-            Write-Host "❌ Published files not found. Run without -SkipBuild first." -ForegroundColor Red
+            Write-Host "[ERROR] Published files not found. Run without -SkipBuild first." -ForegroundColor Red
             exit 1
         }
-        Write-Host "⚠️  Using existing build at: $publishPath" -ForegroundColor Yellow
+    Write-Host "[WARN] Using existing build at: $publishPath" -ForegroundColor Yellow
     }
     
     # Create InnoSetup script
-    $scriptPath = Create-InnoSetupScript $Version $publishPath $metadata
+    $scriptPath = New-InnoSetupScript $Version $publishPath $metadata
     
     # Build installer
     $success = Build-Installer $innoSetupPath $scriptPath
     
     # Cleanup
-    Cleanup-TempFiles
+    Remove-TempFiles
     
     if ($success) {
-        Write-Host "`n🎉 Windows installer created successfully!" -ForegroundColor Green
+        Write-Host "`n[SUCCESS] Windows installer created successfully" -ForegroundColor Green
         
         # Show created files
         $appName = $metadata.DisplayTitle -replace '[^\w\-_]', ''
         $installerName = "${appName}_${Version}_Windows.exe"
-        $installerPath = "..\..\..\..\Publish\Windows\$installerName"
+    $installerPath = "..\..\..\Publish\Windows\$installerName"
         
         if (Test-Path $installerPath) {
             $fileSize = [math]::Round((Get-Item $installerPath).Length / 1MB, 2)
-            Write-Host "📦 Installer: $installerPath ($fileSize MB)" -ForegroundColor Green
+            Write-Host "[INFO] Installer: $installerPath ($fileSize MB)" -ForegroundColor Green
         }
         
         exit 0
@@ -322,7 +326,7 @@ try {
     }
     
 } catch {
-    Write-Host "❌ An error occurred: $($_.Exception.Message)" -ForegroundColor Red
-    Cleanup-TempFiles
+    Write-Host "[ERROR] An error occurred: $($_.Exception.Message)" -ForegroundColor Red
+    Remove-TempFiles
     exit 1
 }
