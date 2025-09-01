@@ -192,6 +192,15 @@ function New-InnoSetupScript {
     $appName = $Metadata.DisplayTitle -replace '[^\w\-_]', ''
     $setupFileName = "${appName}_${Version}_Windows"
     
+    # Resolve icon (optional). Expect an ICO in Resources\AppIcon or fall back to none.
+    $iconCandidate = '..\..\..\Resources\AppIcon\appicon.ico'
+    $iconDirective = ''
+    if (Test-Path $iconCandidate) {
+        $iconDirective = "SetupIconFile=$iconCandidate"
+    } else {
+        Write-Host '[WARN] appicon.ico not found; installer will use default icon.' -ForegroundColor Yellow
+    }
+
     $innoScript = @"
 ; InnoSetup Script for $($Metadata.DisplayTitle)
 ; Generated automatically by MAUI Template Publisher
@@ -217,7 +226,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=..\..\..\Publish\Windows
 OutputBaseFilename=${setupFileName}
-SetupIconFile=..\..\..\Resources\AppIcon\appicon.ico
+$iconDirective
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
