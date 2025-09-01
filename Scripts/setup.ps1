@@ -346,20 +346,18 @@ try {
                 } catch { Write-Host "[WARN] Failed to remove docs/: $($_.Exception.Message)" -ForegroundColor Yellow }
             }
         }
-        # Sanitize SVG assets (remove any lingering XML declarations / DOCTYPE lines that can break Resizetizer)
+    # Sanitize SVG assets (remove any lingering XML declarations / DOCTYPE lines that can break Resizetizer)
     Invoke-SvgSanitization -DryRun:$DryRun
         # Purge obj/bin to ensure no cached transformed SVGs
         if (-not $DryRun) {
             Write-Host "`nCleaning build artifacts (bin/ & obj/) to clear cached assets..." -ForegroundColor Cyan
             foreach ($dir in @('AppShell/bin','AppShell/obj')) {
-                if (Test-Path $dir) {
-                    try {
-                        Remove-Item $dir -Recurse -Force -ErrorAction Stop
-                        Write-Host "   Removed $dir" -ForegroundColor Gray
-                    } catch {
-                        # Use ${dir} before colon to avoid parser interpreting $dir: as a drive spec
-                        Write-Host "   [WARN] Could not remove ${dir}: $($_.Exception.Message)" -ForegroundColor Yellow
-                    }
+                if (-not (Test-Path $dir)) { continue }
+                try {
+                    Remove-Item $dir -Recurse -Force -ErrorAction Stop
+                    Write-Host "   Removed $dir" -ForegroundColor Gray
+                } catch {
+                    Write-Host "   [WARN] Could not remove ${dir}: $($_.Exception.Message)" -ForegroundColor Yellow
                 }
             }
         }
