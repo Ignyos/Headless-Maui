@@ -106,17 +106,27 @@ function Build-MauiApp {
         return $false
     }
     
-    # Publish self-contained
+    # Publish (first try self-contained; fallback to framework-dependent if necessary)
     Write-Host "Publishing self-contained application..." -ForegroundColor Gray
-    $publishResult = & dotnet publish $projectPath -c $Configuration -f $targetFramework -r win10-x64 --self-contained true -p:PublishSingleFile=false --verbosity minimal
-    
+    $publishResult = & dotnet publish $projectPath -c $Configuration -f $targetFramework -p:TargetFrameworks=$targetFramework -r win10-x64 --self-contained true -p:PublishSingleFile=false --verbosity minimal 2>&1
+    $selfContained = $true
     if ($LASTEXITCODE -ne 0) {
-    Write-Host "[ERROR] Publish failed" -ForegroundColor Red
-        Write-Host $publishResult -ForegroundColor Red
-        return $false
+        Write-Host "[WARN] Self-contained publish failed, falling back to framework-dependent publish." -ForegroundColor Yellow
+        Write-Host $publishResult -ForegroundColor DarkYellow
+        $selfContained = $false
+        $publishResult = & dotnet publish $projectPath -c $Configuration -f $targetFramework -p:TargetFrameworks=$targetFramework --no-self-contained --verbosity minimal 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[ERROR] Publish failed (framework-dependent)" -ForegroundColor Red
+            Write-Host $publishResult -ForegroundColor Red
+            return $false
+        }
     }
     
-    $publishPath = Join-Path (Split-Path $projectPath -Parent) "bin\$Configuration\$targetFramework\win10-x64\publish"
+    if ($selfContained) {
+        $publishPath = Join-Path (Split-Path $projectPath -Parent) "bin\$Configuration\$targetFramework\win10-x64\publish"
+    } else {
+        $publishPath = Join-Path (Split-Path $projectPath -Parent) "bin\$Configuration\$targetFramework\publish"
+    }
     
     if (-not (Test-Path $publishPath)) {
     Write-Host "[ERROR] Published files not found at: $publishPath" -ForegroundColor Red
@@ -319,7 +329,10 @@ try {
             exit 1
         }
     } else {
-    $publishPath = "..\..\..\bin\$Configuration\net9.0-windows10.0.19041.0\win10-x64\publish"
+    # Determine existing publish path (prefer self-contained if both exist)
+    $scPath = "..\..\..\bin\$Configuration\net9.0-windows10.0.19041.0\win10-x64\publish"
+    $fdPath = "..\..\..\bin\$Configuration\net9.0-windows10.0.19041.0\publish"
+    if (Test-Path $scPath) { $publishPath = $scPath } elseif (Test-Path $fdPath) { $publishPath = $fdPath } else { $publishPath = $scPath }
         if (-not (Test-Path $publishPath)) {
             Write-Host "[ERROR] Published files not found. Run without -SkipBuild first." -ForegroundColor Red
             exit 1
