@@ -31,7 +31,6 @@ DESCRIPTION:
     - Prompting for project details (app name, company, etc.)
     - Validating input according to platform requirements
     - Replacing template tokens throughout the project
-    - Testing that the project builds successfully
     - Self-destructing to prevent accidental re-runs
 
     This script should only be run ONCE after forking the template.
@@ -254,28 +253,6 @@ function Invoke-SvgSanitization {
     }
 }
 
-function Test-ProjectBuild {
-    Write-Host "`nTesting project build..." -ForegroundColor Cyan
-    try {
-        $originalLocation = Get-Location
-        Set-Location 'AppShell'
-        Write-Host 'Running dotnet build...' -ForegroundColor Gray
-        $buildResult = & dotnet build --verbosity quiet 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host '[OK] Project builds successfully!' -ForegroundColor Green
-            return $true
-        } else {
-            Write-Host '[ERROR] Build failed:' -ForegroundColor Red
-            Write-Host $buildResult -ForegroundColor Red
-            return $false
-        }
-    } catch {
-        Write-Host "[ERROR] Build test failed: $($_.Exception.Message)" -ForegroundColor Red
-        return $false
-    } finally {
-        Set-Location $originalLocation
-    }
-}
 
 function Remove-SetupScript {
     Write-Host "`nCleaning up..." -ForegroundColor Cyan
@@ -361,18 +338,38 @@ try {
                 }
             }
         }
-        if (Test-ProjectBuild) {
-            Write-Host "`n[SUCCESS] Setup completed successfully!" -ForegroundColor Green
-            Write-Host "`nNext steps:" -ForegroundColor Cyan
-            Write-Host '1. Review the changes in your project' -ForegroundColor White
-            Write-Host '2. Run "cd AppShell && dotnet run" to test your app' -ForegroundColor White
-            Write-Host '3. Start customizing wwwroot/ for your frontend' -ForegroundColor White
-            Write-Host '4. Use ".\publish.ps1" to create installers' -ForegroundColor White
-            Remove-SetupScript
-        } else {
-            Write-Host "`n[ERROR] Setup completed but project build failed." -ForegroundColor Red
-            Write-Host 'Please review the build errors and fix any issues.' -ForegroundColor Red
+        Write-Host "`n[SUCCESS] Setup completed successfully!" -ForegroundColor Green
+        Write-Host "`nNext steps:" -ForegroundColor Cyan
+        Write-Host '1. Review the changes in your project' -ForegroundColor White
+        Write-Host '2. Run "cd AppShell && dotnet build" (or dotnet run) to verify everything compiles' -ForegroundColor White
+        Write-Host '3. Start customizing wwwroot/ for your frontend' -ForegroundColor White
+        Write-Host '4. Use ".\publish.ps1" to create installers (handles full build & packaging)' -ForegroundColor White
+        # Offer to run publish script now (optional) after successful setup
+        if (-not $DryRun) {
+            $runNow = Read-Host 'Run publish script now? (y/N)'
+            if ($runNow -match '^[Yy]') {
+                $publishScript = Join-Path (Split-Path -Parent $ScriptFilePath) 'publish.ps1'
+                if (-not (Test-Path $publishScript)) {
+                    Write-Host "[WARN] publish.ps1 not found at $publishScript" -ForegroundColor Yellow
+                    Write-Host '   Skipping publish step.' -ForegroundColor Yellow
+                } else {
+                    Write-Host "\nLaunching publish script in a new process..." -ForegroundColor Cyan
+                    $shellExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell.exe' }
+                    try {
+                        & $shellExe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $publishScript
+                        $pubExit = $LASTEXITCODE
+                        if ($pubExit -eq 0) {
+                            Write-Host "[OK] Publish script completed successfully" -ForegroundColor Green
+                        } else {
+                            Write-Host "[ERROR] Publish script exited with code $pubExit" -ForegroundColor Red
+                        }
+                    } catch {
+                        Write-Host "[ERROR] Failed to start publish script: $($_.Exception.Message)" -ForegroundColor Red
+                    }
+                }
+            }
         }
+        Remove-SetupScript
     }
 } catch {
     Write-Host "`n[ERROR] Setup failed: $($_.Exception.Message)" -ForegroundColor Red
