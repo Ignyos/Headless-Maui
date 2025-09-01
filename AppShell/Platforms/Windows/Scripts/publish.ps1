@@ -129,6 +129,33 @@ function Build-MauiApp {
     return $publishPath
 }
 
+function Invoke-SvgSanitization {
+    param(
+        [string]$Root = '..\\..\\..\\Resources',
+        [switch]$Verbose
+    )
+    if (-not (Test-Path $Root)) { return }
+    Write-Host "Scanning SVG assets for XML prologs/DOCTYPE..." -ForegroundColor Cyan
+    $svgFiles = Get-ChildItem $Root -Recurse -Filter *.svg -File -ErrorAction SilentlyContinue
+    foreach ($file in $svgFiles) {
+        try {
+            $raw = Get-Content $file.FullName -Raw -Encoding UTF8
+            $lines = $raw -split "`r?`n"
+            $originalCount = $lines.Count
+            $filtered = $lines | Where-Object { $_ -notmatch '^<\?xml' -and $_ -notmatch '^<!DOCTYPE' }
+            while ($filtered.Count -gt 0 -and [string]::IsNullOrWhiteSpace($filtered[0])) { $filtered = $filtered[1..($filtered.Count-1)] }
+            if ($filtered.Count -lt $originalCount) {
+                Set-Content $file.FullName ($filtered -join [Environment]::NewLine) -Encoding UTF8 -NoNewline
+                Write-Host "   Sanitized: $($file.FullName)" -ForegroundColor Green
+            } elseif ($Verbose) {
+                Write-Host "   OK: $($file.FullName)" -ForegroundColor Gray
+            }
+        } catch {
+            Write-Host "   [WARN] Could not process SVG $($file.FullName): $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    }
+}
+
 function Get-ProjectMetadata {
     $projectPath = "..\..\..\AppShell.csproj"
     [xml]$projectXml = Get-Content $projectPath
@@ -285,6 +312,8 @@ try {
     
     # Build the application (unless skipped)
     if (-not $SkipBuild) {
+    # Pre-build sanitization to avoid Resizetizer XML declaration issues
+    Invoke-SvgSanitization
         $publishPath = Build-MauiApp $Configuration $Version
         if (-not $publishPath) {
             exit 1
