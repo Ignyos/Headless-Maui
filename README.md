@@ -1,10 +1,10 @@
-# Pure JavaScript Frontend - MAUI Template
+# Headless MAUI - Pure JavaScript MAUI Template
 
-![Latest Release](https://img.shields.io/github/v/release/Ignyos/Headless-Maui-Frontend?label=latest)
+![Latest Release](https://img.shields.io/github/v/release/Ignyos/Headless-Maui?label=latest)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
-![Stars](https://img.shields.io/github/stars/Ignyos/Headless-Maui-Frontend?style=social)
+![Stars](https://img.shields.io/github/stars/Ignyos/Headless-Maui?style=social)
 
-A clean, professional .NET MAUI template with **pure JavaScript frontend** and C# backend services, connected via a minimal JSInterop bridge.
+A clean, professional .NET MAUI template with a **pure JavaScript UI** and C# backend services, connected via a minimal JSInterop bridge.
 
 ## 🤔 Why This Template?
 
@@ -101,7 +101,7 @@ After running the setup (non-dry), continue with the build/run steps below.
 
 ## 📦 Releases
 
-Full release history and detailed notes: https://github.com/Ignyos/Headless-Maui-Frontend/releases
+Full release history and detailed notes: https://github.com/Ignyos/Headless-Maui/releases
 
 Current latest version badge (above) updates automatically when a new GitHub Release is published. Each release includes:
 - Summary of major changes
