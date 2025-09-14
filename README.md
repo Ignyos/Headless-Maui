@@ -1,5 +1,9 @@
 # Pure JavaScript Frontend - MAUI Template
 
+![Latest Release](https://img.shields.io/github/v/release/Ignyos/Headless-Maui-Frontend?label=latest)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![Stars](https://img.shields.io/github/stars/Ignyos/Headless-Maui-Frontend?style=social)
+
 A clean, professional .NET MAUI template with **pure JavaScript frontend** and C# backend services, connected via a minimal JSInterop bridge.
 
 ## 🤔 Why This Template?
@@ -54,10 +58,57 @@ This template combines the best of both worlds:
 ### Quick Start
 1. **Fork this repository** to your GitHub account
 2. **Clone your fork** locally
-3. **Customize the template** for your project:
+3. **Customize the template** for your project (run from the repository root):
    ```powershell
-   .\setup.ps1
+   .\Scripts\setup.ps1
    ```
+
+### One-Time Setup Script (setup.ps1)
+The `setup.ps1` script MUST be executed **from the repository root** (same folder that contains `AppShell/` and this `README.md`).
+
+It will:
+- Prompt you for: Display Name, Application Identifier, Company Name, Package ID, Description
+- Replace all `@@TOKEN@@` placeholders across the project
+- Optionally remove the template marketing `docs/` folder (you decide during the run)
+- Test a build
+- Self-delete to prevent accidental re-use
+
+Optional arguments (always run from the repository root, do NOT cd into Scripts/):
+```powershell
+# Show help / usage
+./Scripts/setup.ps1 -Help
+
+# Preview changes (no file writes, no deletion, no build)
+./Scripts/setup.ps1 -DryRun
+
+# Combine (help text first, then exit)
+./Scripts/setup.ps1 -Help -DryRun
+```
+
+Cross‑platform (PowerShell Core):
+```bash
+pwsh ./Scripts/setup.ps1 -DryRun
+```
+
+Safety / notes:
+- The script only runs correctly from the root because it uses relative paths like `AppShell\AppShell.csproj`.
+- If you see "Project file not found" you are not in the root directory.
+- After a successful non-dry run, `setup.ps1` deletes itself. Commit changes first if you want a history diff.
+- To re-run after deletion, restore it from git history (`git checkout HEAD~1 -- setup.ps1`) or your fork (not usually needed).
+- Use `-DryRun` in CI or to verify what will change before committing.
+
+After running the setup (non-dry), continue with the build/run steps below.
+
+## 📦 Releases
+
+Full release history and detailed notes: https://github.com/Ignyos/Headless-Maui-Frontend/releases
+
+Current latest version badge (above) updates automatically when a new GitHub Release is published. Each release includes:
+- Summary of major changes
+- Installation / publish notes if relevant
+- Any migration tips (when necessary)
+
+For versioning we follow simple semantic versioning (MAJOR.MINOR.PATCH) informed by real-world feedback rather than a rigid roadmap.
 4. **Build and run** the application:
    ```powershell
    cd AppShell
