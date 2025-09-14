@@ -307,7 +307,7 @@ try {
                 $cnamePath = Join-Path 'docs' 'CNAME'
                 if (Test-Path $cnamePath) {
                     $cnameValue = (Get-Content $cnamePath -Raw -Encoding UTF8).Trim()
-                    if ($cnameValue -eq 'headless-maui-frontend.ignyos.com') {
+                    if ($cnameValue -eq 'headless-maui.ignyos.com') {
                         try {
                             Remove-Item $cnamePath -Force -ErrorAction Stop
                             Write-Host 'Removed template CNAME file to avoid domain conflicts.' -ForegroundColor Yellow
