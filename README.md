@@ -1,7 +1,7 @@
 # Headless MAUI - Pure JavaScript MAUI Template
 
 ![Latest Release](https://img.shields.io/github/v/release/Ignyos/Headless-Maui?label=latest)
-![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 ![Stars](https://img.shields.io/github/stars/Ignyos/Headless-Maui?style=social)
 
 A clean, professional .NET MAUI template with a **pure JavaScript UI** and C# backend services, connected via a minimal JSInterop bridge.
@@ -56,12 +56,23 @@ This template combines the best of both worlds:
 - For Windows publishing: [InnoSetup 6.0+](https://jrsoftware.org/isinfo.php)
 
 ### Quick Start
-1. **Fork this repository** to your GitHub account
-2. **Clone your fork** locally
-3. **Customize the template** for your project (run from the repository root):
+You typically won’t build directly on this repo; instead start your own project cleanly.
+
+Option A – GitHub “Use this template” (recommended):
+1. Click “Use this template” → “Create a new repository”
+2. Choose a repo name for your app (do NOT keep Headless-Maui unless you intend to maintain a template)
+3. Clone your new repository locally
+4. From the repository root run the setup script to apply branding & identifiers:
    ```powershell
    .\Scripts\setup.ps1
    ```
+
+Option B – Manual ZIP:
+1. Download ZIP from Releases (or Code → Download ZIP)
+2. Extract, initialize a fresh git repo (`git init && git add . && git commit -m "init"`)
+3. Run the setup script from the extracted root.
+
+After setup, the script self-deletes and all tokens are replaced; begin coding.
 
 ### One-Time Setup Script (setup.ps1)
 The `setup.ps1` script MUST be executed **from the repository root** (same folder that contains `AppShell/` and this `README.md`).
@@ -109,12 +120,12 @@ Current latest version badge (above) updates automatically when a new GitHub Rel
 - Any migration tips (when necessary)
 
 For versioning we follow simple semantic versioning (MAJOR.MINOR.PATCH) informed by real-world feedback rather than a rigid roadmap.
-4. **Build and run** the application:
+4. **Run** the application (after setup):
    ```powershell
    cd AppShell
    dotnet run
    ```
-5. **Start developing** your frontend in `AppShell/wwwroot/`
+5. **Develop** your frontend in `AppShell/wwwroot/`
 
 ### Your First Customization
 After running setup, try modifying the frontend:
@@ -457,3 +468,9 @@ This template provides a solid foundation for:
 - Hybrid solutions with framework-specific frontends
 
 The architecture ensures clean separation of concerns, making it easy to scale and maintain professional applications.
+
+## 📄 License
+
+Licensed under the MIT License – you may use, copy, modify, publish, and distribute with minimal restriction.
+
+Notice: MIT still requires that the copyright & permission notice remain in substantial copies of the Software. If you truly want *no attribution requirement at all*, you’d need a public-domain style license (e.g. Unlicense or CC0) – not applied here by default.
