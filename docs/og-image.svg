@@ -18,11 +18,11 @@
   </style>
 </defs>
 <rect width="1200" height="630" fill="url(#bg)"/>
-<text x="90" y="170" class="title">Headless <tspan class="accent">Maui</tspan> Frontend</text>
+<text x="90" y="170" class="title">Headless <tspan class="accent">MAUI</tspan></text>
 <text x="92" y="235" class="tag">Decoupled JavaScript UI Template for .NET MAUI</text>
 <rect x="90" y="280" width="1020" height="240" class="box"/>
 <text x="115" y="340" class="mono">Frontend (wwwroot)  ⇄  JSInterop  ⇄  C# Services</text>
 <text x="115" y="385" class="mono">Swap React / Vue / Svelte without backend changes</text>
 <text x="115" y="430" class="mono">Publish Windows installer out of the box</text>
-<text x="115" y="475" class="mono">Evolves via feedback • Apache-2.0 Licensed</text>
+<text x="115" y="475" class="mono">Evolves via feedback • MIT Licensed</text>
 </svg>
