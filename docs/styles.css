@@ -2,6 +2,10 @@
 body { margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:#0f1115; color:#e4e7ec; line-height:1.55; }
 a { color:#58a6ff; text-decoration:none; }
 a:hover { text-decoration:underline; }
+/* Fixed subtle brand link */
+.top-brand-link { position:fixed; top:.55rem; right:.7rem; font-size:.75rem; letter-spacing:.5px; padding:.35rem .55rem; background:rgba(22,27,34,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.06); color:#b7c4d4; border-radius:6px; z-index:1000; text-decoration:none; font-weight:500; line-height:1; display:inline-block; transition:.18s background,.18s color,.18s border; }
+.top-brand-link:hover { background:rgba(37,44,53,.75); color:#d4dde7; text-decoration:none; }
+.top-brand-link:focus-visible { outline:2px solid #4cc9f0; outline-offset:2px; }
 code { background:#1b1f27; padding:2px 5px; border-radius:4px; font-size:0.9em; }
 pre { background:#1b1f27; padding:1rem; overflow:auto; border-radius:10px; }
 
@@ -60,6 +64,8 @@ section h3 { margin:.2rem 0 .4rem; font-size:1.05rem; font-weight:600; letter-sp
 /* Light mode (optional toggle future) */
 @media (prefers-color-scheme: light){
   body { background:#f5f7fa; color:#1d2430; }
+  .top-brand-link { background:rgba(250,252,255,.65); color:#3a4654; border-color:rgba(30,41,59,.15); }
+  .top-brand-link:hover { background:rgba(255,255,255,.9); color:#111a25; }
   .hero { background: radial-gradient(circle at 30% 30%, #eef2f7, #d8dde4 70%); }
   .tagline { color:#3a4654; }
   code, pre { background:#eef2f7; }
